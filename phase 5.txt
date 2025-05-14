@@ -1,0 +1,60 @@
+import cv2
+import numpy as np
+
+# Simulated robot control functions
+def move_forward():
+    print("Robot is moving forward.")
+
+def turn_left():
+    print("Robot is turning left.")
+
+def turn_right():
+    print("Robot is turning right.")
+
+def stop():
+    print("Robot has stopped.")
+
+# Simulate obstacle detection using basic image processing
+def detect_obstacles(frame):
+    # Convert frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    # Use Canny edge detection to simulate obstacle detection
+    edges = cv2.Canny(gray, threshold1=100, threshold2=200)
+    
+    # Count the number of edges detected, which simulates the presence of an obstacle
+    if np.count_nonzero(edges) > 10000:
+        return True  # Obstacle detected
+    else:
+        return False  # No obstacle
+
+# Main loop simulating the robot's navigation
+def main():
+    cap = cv2.VideoCapture(0)  # Use the webcam as the robot's camera
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Simulate obstacle detection
+        obstacle_detected = detect_obstacles(frame)
+
+        if obstacle_detected:
+            stop()  # Stop if an obstacle is detected
+            turn_left()  # Turn left to avoid the obstacle
+        else:
+            move_forward()  # Move forward if no obstacle is detected
+
+        # Show the video feed
+        cv2.imshow('Autonomous Vehicle Camera', frame)
+
+        # Exit on 'q' key press
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
