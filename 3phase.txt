@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+// Define the Box structure for bounding boxes
+typedef struct {
+    int x;      // x coordinate of the top-left corner
+    int y;      // y coordinate of the top-left corner
+    int width;  // width of the bounding box
+    int height; // height of the bounding box
+} Box;
+
+// Function to assess risk of each detected pedestrian
+const char* assess_risk(Box box, int frame_width) {
+    int center_x = box.x + box.width / 2;  // Find the center of the bounding box
+    int offset = abs(center_x - frame_width / 2);  // Distance from center of frame
+    double size = box.width * box.height;  // Area of the bounding box
+    double position_score = 1.0 - ((double)offset / (frame_width / 2));  // Closer to center = higher score
+    double risk_score = size * position_score;  // Combine size and position
+
+    if (risk_score > 10000) {
+        return "HIGH";  // Large and centered = high risk
+    } else if (risk_score > 5000) {
+        return "MEDIUM";  // Medium size or slightly off-center = medium risk
+    } else {
+        return "LOW";  // Small or off-center = low risk
+    }
+}
+
+// Function to process all detected pedestrians
+void detect_pedestrians(Box *boxes, int num_boxes, int frame_width) {
+    for (int i = 0; i < num_boxes; i++) {
+        const char* risk = assess_risk(boxes[i], frame_width);
+        printf("Pedestrian at (%d, %d) with size [%d x %d] --> Risk: %s\n",
+               boxes[i].x, boxes[i].y, boxes[i].width, boxes[i].height, risk);
+    }
+}
+
+int main() {
+    int frame_width = 640;  // Width of the camera frame
+    int frame_height = 480; // Height of the camera frame (not used here)
+
+    // Simulated bounding boxes of detected pedestrians
+    Box pedestrians[] = {
+        {250, 100, 80, 180},  // Center, large -> High risk
+        {500, 120, 40, 100},  // Right side, small -> Low risk
+        {100, 200, 30, 60}    // Left side, small -> Low risk
+    };
+
+    int num_pedestrians = sizeof(pedestrians) / sizeof(pedestrians[0]);
+
+    // Display header
+    printf("Pedestrian Risk Assessment for Autonomous Vehicle\n");
+    printf("-------------------------------------------------\n");
+
+    // Perform detection
+    detect_pedestrians(pedestrians, num_pedestrians, frame_width);
+
+    return 0;
+}
